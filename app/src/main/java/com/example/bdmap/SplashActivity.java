@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.bdmap.presenter.Presenter;
+import com.example.bdmap.service.LocationService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -47,6 +48,7 @@ public class SplashActivity extends AppCompatActivity {
         ok = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         pre();
         closeAndroidPDialog();
+        startService(new Intent(this,LocationService.class));
     }
 
     /**
@@ -128,4 +130,6 @@ public class SplashActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
 }

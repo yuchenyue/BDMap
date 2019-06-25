@@ -21,5 +21,4 @@ public class Presenter implements MainContract.MainPresenter {
         Toast.makeText(context,"MVP提示"+ms,Toast.LENGTH_SHORT).show();
     }
 
-
 }

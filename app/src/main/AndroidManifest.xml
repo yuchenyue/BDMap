@@ -60,6 +60,11 @@
             android:enabled="true"
             android:process=":remote" />
 
+        <service
+            android:name="com.example.bdmap.service.LocationService"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity android:name=".MainActivity"
             android:screenOrientation="portrait"></activity>
     </application>
