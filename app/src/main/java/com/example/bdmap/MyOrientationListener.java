@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
  * Created by yuchenyue
  * Time 2019/6/14
  * 方向传感器
+ * 暂时不用 
  */
 public class MyOrientationListener implements SensorEventListener {
     private SensorManager mSensorManager;
