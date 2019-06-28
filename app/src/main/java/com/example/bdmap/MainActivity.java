@@ -45,6 +45,10 @@ import com.baidu.mapapi.search.poi.PoiDetailSearchResult;
 import com.baidu.mapapi.search.poi.PoiIndoorResult;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
+import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
+import com.baidu.mapapi.search.sug.SuggestionResult;
+import com.baidu.mapapi.search.sug.SuggestionSearch;
+import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.example.bdmap.contract.MainContract;
 import com.example.bdmap.presenter.Presenter;
 import com.example.bdmap.utils.MyApplication;
@@ -76,6 +80,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private Presenter presenter;
     MapStatusUpdate update;
     PoiSearch mPoiSearch;
+    SuggestionSearch suggestionSearch;
 
     /**
      * 个性化地图皮肤
@@ -207,10 +212,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private void initMap() {
         mBaiduMap = mMapView.getMap();//获取地图控件引用
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);//普通地图
-        mIconLocation = BitmapDescriptorFactory.fromResource(R.mipmap.navi_map_gps);//初始化图标
+//        mIconLocation = BitmapDescriptorFactory.fromResource(R.mipmap.navi_map_gps);//初始化图标
         icon = BitmapDescriptorFactory.fromResource(R.drawable.icon_gcoding);
         icon1 = BitmapDescriptorFactory.fromResource(R.drawable.mappoi);
-        MyLocationConfiguration configuration4 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, mIconLocation);
+        MyLocationConfiguration configuration4 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, null);
         mBaiduMap.setMyLocationConfiguration(configuration4);
         mBaiduMap.setMyLocationEnabled(true);
 
@@ -252,7 +257,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 OverlayOptions ooA = new MarkerOptions().position(poi.getPosition()).icon(icon1)
                         .zIndex(6).draggable(true).alpha(0.7f).flat(true);
                 mBaiduMap.addOverlay(ooA);
-                InfoWindow mInfowindow = new InfoWindow(button,poi.getPosition(),-80);
+                InfoWindow mInfowindow = new InfoWindow(button,poi.getPosition(),-100);
                 mBaiduMap.showInfoWindow(mInfowindow);
                 return true;
             }
@@ -290,15 +295,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 LatLng latLngs = new LatLng(MyApplication.getLatitude(),MyApplication.getLongitude());
                 MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLng(latLngs);
                 mBaiduMap.animateMapStatus(mapStatusUpdate);
-                presenter.tos(latLngs.toString());
                 break;
             case R.id.gs:
-                MyLocationConfiguration configuration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, mIconLocation);
+                MyLocationConfiguration configuration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true,null);
                 mBaiduMap.setMyLocationConfiguration(configuration);
                 fab_menu_button_down.collapse();
                 break;
             case R.id.dh:
-                MyLocationConfiguration configuration2 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.COMPASS, true, mIconLocation);
+                MyLocationConfiguration configuration2 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.COMPASS, true, null);
                 mBaiduMap.setMyLocationConfiguration(configuration2);
                 fab_menu_button_down.collapse();
                 break;
@@ -391,13 +395,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         search_menu.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                presenter.tos(query);
+//                presenter.tos(query);
                 mPoiSearch = PoiSearch.newInstance();
                 mPoiSearch.setOnGetPoiSearchResultListener(listener);
                 mPoiSearch.searchInCity(new PoiCitySearchOption()
                         .city(MyApplication.getCity())
                         .keyword(query)
                         .pageCapacity(10));
+//                suggestionSearch = SuggestionSearch.newInstance();
+//                suggestionSearch.setOnGetSuggestionResultListener(suglistener);
+//                suggestionSearch.requestSuggestion(new SuggestionSearchOption().city(MyApplication.getCity()).keyword(query));
                 return true;
             }
 
@@ -408,8 +415,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         });
     }
 
+//    OnGetSuggestionResultListener suglistener = new OnGetSuggestionResultListener() {
+//        @Override
+//        public void onGetSuggestionResult(SuggestionResult suggestionResult) {
+//            presenter.tos("0989");
+//        }
+//    };
+
     /**
-     * 搜索监听
+     * POI 搜索监听
      */
     OnGetPoiSearchResultListener listener = new OnGetPoiSearchResultListener() {
         @Override
@@ -467,6 +481,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     @Override
     protected void onDestroy() {
         mPoiSearch.destroy();
+        suggestionSearch.destroy();
         mBaiduMap.setMyLocationEnabled(false);
         mMapView.onDestroy();
         mMapView = null;

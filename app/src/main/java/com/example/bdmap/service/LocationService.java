@@ -66,13 +66,13 @@ public class LocationService extends Service implements MainContract.MainView{
         option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
         option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation
         option.setNeedDeviceDirect(true);//返回的定位结果包含手机机头的方向
-        option.setLocationNotify(true);//可选，默认false，设置是否当GPS有效时按照1S/1次频率输出GPS结果
+        option.setLocationNotify(false);//可选，默认false，设置是否当GPS有效时按照1S/1次频率输出GPS结果
         option.setIgnoreKillProcess(true);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
         option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
         option.SetIgnoreCacheException(true);//可选，默认false，设置是否收集CRASH信息，默认收集
         option.setOpenGps(true);//可选，默认false,设置是否使用gps
         option.setOpenAutoNotifyMode();
-        option.setOpenAutoNotifyMode(3000, 1, LocationClientOption.LOC_SENSITIVITY_HIGHT);
+        option.setOpenAutoNotifyMode(2000, 1, LocationClientOption.LOC_SENSITIVITY_HIGHT);
         option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤GPS仿真结果，默认需要
         option.setWifiCacheTimeOut(5 * 60 * 1000);
         mLocationClient.setLocOption(option);
