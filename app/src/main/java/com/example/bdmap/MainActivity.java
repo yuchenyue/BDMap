@@ -37,6 +37,8 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.busline.BusLineResult;
+import com.baidu.mapapi.search.busline.OnGetBusLineSearchResultListener;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
 import com.baidu.mapapi.search.poi.PoiCitySearchOption;
@@ -421,6 +423,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 //            presenter.tos("0989");
 //        }
 //    };
+
+    OnGetBusLineSearchResultListener buslistener = new OnGetBusLineSearchResultListener() {
+        @Override
+        public void onGetBusLineResult(BusLineResult busLineResult) {
+
+        }
+    };
 
     /**
      * POI 搜索监听

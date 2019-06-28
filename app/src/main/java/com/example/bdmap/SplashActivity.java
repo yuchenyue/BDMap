@@ -8,6 +8,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -72,23 +73,23 @@ public class SplashActivity extends AppCompatActivity {
             String[] permissions = permissionList.toArray(new String[permissionList.size()]);
             ActivityCompat.requestPermissions(SplashActivity.this, permissions, 1);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if (!Settings.System.canWrite(this)){
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("修改系统设置");
-                builder.setMessage("我们的应用需要您授权\"修改系统设置\"的权限,请点击\"设置\"确认开启");
-                builder.setPositiveButton("Y", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,Uri.parse("package:"+getPackageName()));
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                    }
-                });
-                builder.setCancelable(false);
-                builder.show();
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+//            if (!Settings.System.canWrite(this)){
+//                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//                builder.setTitle("修改系统设置");
+//                builder.setMessage("我们的应用需要您授权\"修改系统设置\"的权限,请点击\"设置\"确认开启");
+//                builder.setPositiveButton("Y", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,Uri.parse("package:"+getPackageName()));
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        startActivity(intent);
+//                    }
+//                });
+//                builder.setCancelable(false);
+//                builder.show();
+//            }
+//        }
         if (ok){
 
         }else {
@@ -106,7 +107,6 @@ public class SplashActivity extends AppCompatActivity {
             builder.setCancelable(false);
             builder.show();
             presenter.tos("系统检测到未开启GPS定位服务");
-//            Toast.makeText(this, "系统检测到未开启GPS定位服务",Toast.LENGTH_SHORT).show();
         }
     }
 
