@@ -1,7 +1,9 @@
 package com.example.bdmap.utils;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
+import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.Marker;

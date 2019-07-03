@@ -11,6 +11,9 @@ import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.map.MyLocationData;
+import com.example.bdmap.MainActivity;
+import com.example.bdmap.MyOrientationListener;
 import com.example.bdmap.contract.MainContract;
 import com.example.bdmap.presenter.Presenter;
 import com.example.bdmap.utils.MyApplication;
@@ -24,6 +27,8 @@ public class LocationService extends Service implements MainContract.MainView{
     public LocationClient mLocationClient;
     public BDAbstractLocationListener myListener = new MyLocationListener();
     private Presenter presenter;
+    private MyOrientationListener myOrientationListener;
+    private float mCurrentX;
     @Override
     public void onCreate() {
         initLocation();
@@ -62,7 +67,7 @@ public class LocationService extends Service implements MainContract.MainView{
         LocationClientOption option = new LocationClientOption();
         option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
         option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
-        option.setScanSpan(3000);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
+        option.setScanSpan(1000);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
         option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
         option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation
         option.setNeedDeviceDirect(true);//返回的定位结果包含手机机头的方向
@@ -72,11 +77,20 @@ public class LocationService extends Service implements MainContract.MainView{
         option.SetIgnoreCacheException(true);//可选，默认false，设置是否收集CRASH信息，默认收集
         option.setOpenGps(true);//可选，默认false,设置是否使用gps
         option.setOpenAutoNotifyMode();
-        option.setOpenAutoNotifyMode(2000, 1, LocationClientOption.LOC_SENSITIVITY_HIGHT);
+        option.setOpenAutoNotifyMode(1000, 1, LocationClientOption.LOC_SENSITIVITY_HIGHT);
         option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤GPS仿真结果，默认需要
         option.setWifiCacheTimeOut(5 * 60 * 1000);
         mLocationClient.setLocOption(option);
         mLocationClient.start();//开启定位
+
+        myOrientationListener = new MyOrientationListener(getApplicationContext());
+        myOrientationListener.setOnOrientationListener(new MyOrientationListener.OnOrientationListener() {
+            @Override
+            public void onOrientationChanged(float x) {
+                mCurrentX = x;
+                MyApplication.setmCurrentX(mCurrentX);
+            }
+        });
     }
 
     /**
@@ -87,12 +101,10 @@ public class LocationService extends Service implements MainContract.MainView{
         public void onReceiveLocation(BDLocation location) {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
-            float radius = location.getRadius();
             String city = location.getCity();
 //            Log.d(TAG,"aaa" + "定位信息1" + latitude);
             MyApplication.setLatitude(latitude);
             MyApplication.setLongitude(longitude);
-            MyApplication.setRadius(radius);
             MyApplication.setCity(city);
         }
     }
@@ -101,5 +113,13 @@ public class LocationService extends Service implements MainContract.MainView{
     public void onDestroy() {
         super.onDestroy();
         mLocationClient.stop();
+        myOrientationListener.stop();
+    }
+
+    @Override
+    public boolean stopService(Intent name) {
+        myOrientationListener.stop();
+        mLocationClient.stop();
+        return super.stopService(name);
     }
 }

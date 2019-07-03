@@ -3,12 +3,16 @@ package com.example.bdmap;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
@@ -53,6 +58,7 @@ import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.example.bdmap.contract.MainContract;
 import com.example.bdmap.presenter.Presenter;
+import com.example.bdmap.service.LocationService;
 import com.example.bdmap.utils.MyApplication;
 import com.example.bdmap.utils.PoiOverlay;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -75,14 +81,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private FloatingActionButton fw, gs, dh, mr;
     private FloatingActionsMenu fab_menu_button_down;
     private RadioGroup radioGroup;
-    public LocationClient mLocationClient;
-    boolean isFirstLoc = true; // 是否首次定位
-    BitmapDescriptor mIconLocation, icon,icon1;
+    BitmapDescriptor icon,icon1;
     private DrawerLayout drawerLayout;
     private Presenter presenter;
     MapStatusUpdate update;
     PoiSearch mPoiSearch;
     SuggestionSearch suggestionSearch;
+    private static boolean isExit = false;
+    boolean isFirstLoc = true; // 是否首次定位
+    LocationService locationService;
+
 
     /**
      * 个性化地图皮肤
@@ -214,26 +222,32 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private void initMap() {
         mBaiduMap = mMapView.getMap();//获取地图控件引用
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);//普通地图
-//        mIconLocation = BitmapDescriptorFactory.fromResource(R.mipmap.navi_map_gps);//初始化图标
         icon = BitmapDescriptorFactory.fromResource(R.drawable.icon_gcoding);
         icon1 = BitmapDescriptorFactory.fromResource(R.drawable.mappoi);
         MyLocationConfiguration configuration4 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, null);
         mBaiduMap.setMyLocationConfiguration(configuration4);
         mBaiduMap.setMyLocationEnabled(true);
 
+        dw();
+    }
+
+    /**
+     * 定位点
+     */
+    private void dw(){
         MyLocationData locData = new MyLocationData.Builder()// 构造定位数据
-                .accuracy(MyApplication.getRadius())
-                .direction(100).latitude(MyApplication.getLatitude())
+                .accuracy(100)
+                .direction(MyApplication.getmCurrentX())
+                .latitude(MyApplication.getLatitude())
                 .longitude(MyApplication.getLongitude())
                 .build();
         mBaiduMap.setMyLocationData(locData);// 设置定位数据
-        LatLng latLng = new LatLng(MyApplication.getLatitude(),MyApplication.getLongitude());
         update = MapStatusUpdateFactory.zoomTo(19f);
         mBaiduMap.animateMapStatus(update);
+        LatLng latLng = new LatLng(MyApplication.getLatitude(),MyApplication.getLongitude());
         update = MapStatusUpdateFactory.newLatLng(latLng);
-        mBaiduMap.animateMapStatus(update);
+        mBaiduMap.setMapStatus(update);
     }
-
     /**
      * 地图点击事件
      */
@@ -247,8 +261,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 mBaiduMap.addOverlay(ooA);
                 // 添加圆
                 OverlayOptions ooCircle = new CircleOptions().fillColor(0XFF7DC5EB)
-                        .center(point).stroke(new Stroke(2, 0xAA00FF00))
-                        ;
+                        .center(point).stroke(new Stroke(2, 0xAA00FF00));
                 mBaiduMap.addOverlay(ooCircle);
             }
             public boolean onMapPoiClick(MapPoi poi) {
@@ -292,11 +305,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         switch (v.getId()) {
             case R.id.fw:
                 mBaiduMap.clear();
-                update = MapStatusUpdateFactory.zoomTo(19f);
-                mBaiduMap.animateMapStatus(update);
-                LatLng latLngs = new LatLng(MyApplication.getLatitude(),MyApplication.getLongitude());
-                MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLng(latLngs);
-                mBaiduMap.animateMapStatus(mapStatusUpdate);
+                dw();
                 break;
             case R.id.gs:
                 MyLocationConfiguration configuration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true,null);
@@ -309,7 +318,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 fab_menu_button_down.collapse();
                 break;
             case R.id.mr:
-                MyLocationConfiguration configuration3 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, mIconLocation);
+                MyLocationConfiguration configuration3 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, null);
                 mBaiduMap.setMyLocationConfiguration(configuration3);
                 fab_menu_button_down.collapse();
                 break;
@@ -511,5 +520,44 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         super.onPause();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mBaiduMap.setMyLocationEnabled(false);
+    }
+
+    /**
+     * 按两次返回键退出程序
+     *
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            exit();
+            return false;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            isExit = false;
+        }
+    };
+
+    private void exit() {
+        if (!isExit) {
+            isExit = true;
+            presenter.tos("再按一次退出程序");
+            mHandler.sendEmptyMessageDelayed(0, 2000);
+        } else {
+            stopService(new Intent(this,MainActivity.class));
+            MyApplication.getInstance().exit(this);
+        }
+    }
 
 }
