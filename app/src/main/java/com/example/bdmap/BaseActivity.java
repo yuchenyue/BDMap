@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 
+import com.example.bdmap.base.AppManager;
 import com.example.bdmap.service.LocationService;
 
 public class BaseActivity extends AppCompatActivity {
@@ -17,8 +18,9 @@ public class BaseActivity extends AppCompatActivity {
 
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
+        AppManager.getAppManager().addActivity(this);
     }
 
     /**
