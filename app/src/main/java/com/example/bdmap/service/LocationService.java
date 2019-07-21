@@ -7,19 +7,11 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.baidu.location.BDAbstractLocationListener;
-import com.baidu.location.BDLocation;
-import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
-import com.baidu.mapapi.map.MyLocationData;
 import com.example.bdmap.contract.MainContract;
-import com.example.bdmap.presenter.Presenter;
-import com.example.bdmap.utils.MyApplication;
 
 public class LocationService extends Service implements MainContract.MainView{
 
     public static final String TAG = "LocationService";
-    private Presenter presenter;
     @Override
     public void onCreate() {
         Log.d(TAG,"aaa"+"服务开启");

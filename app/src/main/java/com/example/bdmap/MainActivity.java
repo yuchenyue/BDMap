@@ -12,20 +12,25 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.location.Poi;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
@@ -45,6 +50,7 @@ import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
+import com.baidu.mapapi.search.poi.PoiCitySearchOption;
 import com.baidu.mapapi.search.poi.PoiDetailResult;
 import com.baidu.mapapi.search.poi.PoiDetailSearchResult;
 import com.baidu.mapapi.search.poi.PoiIndoorResult;
@@ -55,6 +61,7 @@ import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
 import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
+import com.example.bdmap.adapter.AutoEditTextAdapter;
 import com.example.bdmap.base.AppManager;
 import com.example.bdmap.contract.MainContract;
 import com.example.bdmap.presenter.Presenter;
@@ -76,11 +83,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private MapView mMapView;
     private BaiduMap mBaiduMap;
     private Toolbar mToolbar;
-    private SearchView search_menu;
     private Switch switch1, rl, jt;
     private FloatingActionButton fw, gs, dh, mr;
     private FloatingActionsMenu fab_menu_button_down;
     private RadioGroup radioGroup;
+    private AutoCompleteTextView search_text;
+//    private TextView mJieguo;
+
     BitmapDescriptor icon,icon1;
     private DrawerLayout drawerLayout;
     private Presenter presenter;
@@ -96,9 +105,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private double latitude,longitude;//经纬度
     private String city;//当前城市
     private boolean isFirstLoc = true;//是否是第一次定位
-    private LatLng latLng;//定位数据
+    private LatLng latLng,slatLng;//定位数据
 
-    private ArrayAdapter<String> sugAdapter = null;
+    private List<String> stringlist = new ArrayList<>();
+    private List<String> stringlist2 = new ArrayList<>();
     /**
      * 个性化地图皮肤
      *
@@ -151,6 +161,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         drawer();
         initMap();
         mapClick();
+
     }
 
     /**
@@ -159,7 +170,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private void initView() {
         drawerLayout = findViewById(R.id.drawerLayout);
         mToolbar = findViewById(R.id.toolbar);
-        search_menu = findViewById(R.id.search_menu);
         mMapView = findViewById(R.id.mapView);
         fab_menu_button_down = findViewById(R.id.fab_menu_button_down);
 
@@ -184,13 +194,88 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         switch1.setOnCheckedChangeListener(this);
         presenter = new Presenter(getApplicationContext(), this);
 
-
+        search_text = findViewById(R.id.search_text);
+//        mJieguo = findViewById(R.id.jieguo);
+        sugSearch();
     }
+
+    private void sugSearch(){
+
+        suggestionSearch = SuggestionSearch.newInstance();
+        suggestionSearch.setOnGetSuggestionResultListener(sugListener);
+        search_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                search_text.showDropDown();
+            }
+        });
+        search_text.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                suggestionSearch.requestSuggestion(new SuggestionSearchOption().city(city).keyword(search_text.getText().toString().trim()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+    }
+    OnGetSuggestionResultListener sugListener = new OnGetSuggestionResultListener() {
+        @Override
+        public void onGetSuggestionResult(SuggestionResult suggestionResult) {
+            if (suggestionResult == null || suggestionResult.getAllSuggestions() == null) {//未找到相关结果
+                return;
+            } else {//获取在线建议检索结果
+                final List<SuggestionResult.SuggestionInfo> resl = suggestionResult.getAllSuggestions();
+                stringlist.clear();
+                stringlist2.clear();
+                for (int i = 0; i < resl.size(); i++) {
+                    stringlist.add(resl.get(i).key);
+                    stringlist2.add(resl.get(i).city+resl.get(i).district+resl.get(i).key);
+                    slatLng = resl.get(i).pt;
+                }
+//                mJieguo.setText("" + resl);
+                AutoEditTextAdapter adapter = new AutoEditTextAdapter(stringlist,stringlist2, MainActivity.this);
+                search_text.setAdapter(adapter);
+                adapter.setOnItemClickListener(new AutoEditTextAdapter.OnItemClickListener() {
+                    @Override
+                    public void onClick(int position) {
+                        LatLng sulating = resl.get(position).pt;
+                        if (sulating != null) {
+
+                            Toast.makeText(MainActivity.this, "" + resl.get(position).key, Toast.LENGTH_SHORT).show();
+                            search_text.setText(stringlist.get(position));
+                            search_text.dismissDropDown();
+
+                            mBaiduMap.clear();
+                            OverlayOptions overlayOptions = new MarkerOptions().position(sulating).icon(icon);
+                            mBaiduMap.addOverlay(overlayOptions);
+                            update = MapStatusUpdateFactory.newLatLng(sulating);
+                            mBaiduMap.animateMapStatus(update);
+                        }else {
+                            presenter.tos("请选择附近其他位置");
+                        }
+                    }
+                    @Override
+                    public void onLongClick(int position) {
+
+                    }
+                });
+            }
+        }
+    };
+
 
     private void drawer() {
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("地图");
 
+        icon = BitmapDescriptorFactory.fromResource(R.drawable.icon_gcoding);
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
         drawerToggle.syncState();
         drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
@@ -231,7 +316,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private void initMap() {
         mBaiduMap = mMapView.getMap();//获取地图控件引用
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);//普通地图
-
+        mBaiduMap.setIndoorEnable(true);//室内图默认开启
+        mBaiduMap.setTrafficEnabled(true);//交通图默认开启
         MyLocationConfiguration configuration4 = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, null);
         mBaiduMap.setMyLocationConfiguration(configuration4);
         mBaiduMap.setMyLocationEnabled(true);
@@ -263,8 +349,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         option.setOpenAutoNotifyMode(1000, 1, LocationClientOption.LOC_SENSITIVITY_HIGHT);
         option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤GPS仿真结果，默认需要
         option.setWifiCacheTimeOut(5 * 60 * 1000);
+        initMyOrien();
         mLocationClient.setLocOption(option);
     }
+
 
     private class MyLocationListener extends BDAbstractLocationListener {
         @Override
@@ -273,13 +361,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
             longitude = bdLocation.getLongitude();
             city = bdLocation.getCity();
             latLng = new LatLng(latitude,longitude);
+
             MyLocationData locationData = new MyLocationData.Builder()
-                    .accuracy(100)
+                    .accuracy(400)
+                    .direction(mCurrentX)
                     .latitude(latitude)
                     .longitude(longitude)
                     .build();
             mBaiduMap.setMyLocationData(locationData);
-
+            Log.d(TAG,"fx"+locationData.direction);
             if (isFirstLoc){
                 isFirstLoc = false;
                 fistLoc();
@@ -301,20 +391,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     }
 
     /**
-     * 第一次定位
+     * 方向传感器
      */
-    private void fistLoc(){
-        update = MapStatusUpdateFactory.zoomTo(19f);
-        mBaiduMap.setMapStatus(update);
-        update = MapStatusUpdateFactory.newLatLng(latLng);
-        mBaiduMap.animateMapStatus(update);
-        myOrientationListener = new MyOrientationListener(getApplicationContext());
+    private void initMyOrien(){
+        myOrientationListener = new MyOrientationListener(MainActivity.this);
         myOrientationListener.setOnOrientationListener(new MyOrientationListener.OnOrientationListener() {
             @Override
             public void onOrientationChanged(float x) {
                 mCurrentX = x;
             }
         });
+    }
+
+    /**
+     * 设置缩放级别和当前位置
+     */
+    private void fistLoc(){
+        update = MapStatusUpdateFactory.zoomTo(17f);
+        mBaiduMap.setMapStatus(update);
+        update = MapStatusUpdateFactory.newLatLng(latLng);
+        mBaiduMap.animateMapStatus(update);
     }
     /**
      * 地图点击事件
@@ -323,7 +419,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
             public void onMapClick(LatLng point) {
                 mBaiduMap.clear();
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.icon_gcoding);
+
                 OverlayOptions ooA = new MarkerOptions().position(point).icon(icon)
                         .zIndex(6).draggable(true).alpha(0.7f).flat(true);
                 mBaiduMap.addOverlay(ooA);
@@ -362,8 +458,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         });
 
     }
-
-
 
     /**
      * 定位、跟随、方向指示、默认导航模式
@@ -419,7 +513,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
             case R.id.jt://开启交通图
                 if (isChecked) {
                     mBaiduMap.setTrafficEnabled(true);
-                    mBaiduMap.setBaiduHeatMapEnabled(false);
                 } else {
                     mBaiduMap.setTrafficEnabled(false);
                 }
@@ -459,69 +552,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu, menu);
-        getMenuInflater().inflate(R.menu.search, menu);
-        search_menu = (SearchView)menu.findItem(R.id.search_menu).getActionView();
-        poisearch();
         return true;
     }
 
-    private void poisearch(){
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchableInfo info = searchManager.getSearchableInfo(getComponentName());
-        search_menu.setSearchableInfo(info);
-        search_menu.setIconifiedByDefault(true);
-        search_menu.setSubmitButtonEnabled(true);
-        search_menu.setBackgroundColor(Color.GRAY);
-        search_menu.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-                public boolean onQueryTextSubmit(String query) {
-                mPoiSearch = PoiSearch.newInstance();
-                mPoiSearch.setOnGetPoiSearchResultListener(listener);
-                mPoiSearch.searchNearby(new PoiNearbySearchOption()
-                        .location(latLng)
-                        .radius(1000)
-                        .keyword(query)
-                        .pageCapacity(3));
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
-    }
-
-    /**
-     * POI 搜索监听
-     */
-    OnGetPoiSearchResultListener listener = new OnGetPoiSearchResultListener() {
-        @Override
-        public void onGetPoiResult(PoiResult poiResult) {
-            if (poiResult.error == SearchResult.ERRORNO.NO_ERROR) {
-                mBaiduMap.clear();
-                PoiOverlay poiOverlay = new PoiOverlay(mBaiduMap);
-                poiOverlay.setData(poiResult);
-                poiOverlay.addToMap();
-                poiOverlay.zoomToSpan();
-            }
-        }
-
-        @Override
-        public void onGetPoiDetailResult(PoiDetailResult poiDetailResult) {
-
-        }
-
-        @Override
-        public void onGetPoiDetailResult(PoiDetailSearchResult poiDetailSearchResult) {
-
-        }
-
-        @Override
-        public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
-
-        }
-    };
 
     /**
      * 地图切换
@@ -546,6 +579,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mBaiduMap.setMyLocationEnabled(true);
+        if (!mLocationClient.isStarted()) {
+            mLocationClient.start();
+            //开启方向传感器
+            myOrientationListener.start();
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -573,8 +616,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
     @Override
     protected void onStop() {
-        super.onStop();
         mBaiduMap.setMyLocationEnabled(false);
+        mLocationClient.stop();
+        myOrientationListener.stop();
+        super.onStop();
     }
 
     /**
@@ -606,7 +651,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
             presenter.tos("再按一次退出程序");
             mHandler.sendEmptyMessageDelayed(0, 2000);
         } else {
-            stopService(new Intent(this,MainActivity.class));
+//            stopService(new Intent(this,MainActivity.class));
             AppManager.getAppManager().AppExit(this);
         }
     }

@@ -12,17 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include
-            android:id="@+id/include"
-            layout="@layout/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
         <com.baidu.mapapi.map.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/include"
             android:layout_alignParentStart="true"
             android:layout_marginStart="0dp"
             android:layout_marginTop="0dp"
@@ -30,6 +23,32 @@
             android:focusable="true">
 
         </com.baidu.mapapi.map.MapView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/white_btn">
+            <include
+                android:id="@+id/include"
+                layout="@layout/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+
+        <!--<TextView-->
+            <!--android:id="@+id/jieguo"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentStart="true"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:layout_marginStart="0dp"-->
+            <!--android:layout_marginTop="70dp"-->
+            <!--android:background="#d6caca"-->
+            <!--android:padding="15dp"-->
+            <!--android:text="输入位置附近的位置" />-->
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/fab_menu_button_down"
@@ -90,12 +109,14 @@
 
     </RelativeLayout>
 
+
+
     <!--侧滑部分-->
     <RelativeLayout
         android:layout_width="200dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="#bfbfbf"
+            android:layout_gravity="start"
+            android:background="#bfbfbf"
         android:paddingTop="50dp">
 
 
@@ -169,7 +190,8 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:track="@drawable/track"
-                android:thumb="@drawable/thumb"/>
+                android:thumb="@drawable/thumb"
+                android:checked="true"/>
         </LinearLayout>
         <LinearLayout
             android:id="@+id/shinei"
@@ -198,7 +220,8 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:track="@drawable/track"
-                android:thumb="@drawable/thumb"/>
+                android:thumb="@drawable/thumb"
+                android:checked="true"/>
         </LinearLayout>
 
         <LinearLayout

@@ -76,8 +76,7 @@ public class MyOrientationListener implements SensorEventListener {
 
     private OnOrientationListener mOnOrientationListener;
 
-    public void setOnOrientationListener(
-            OnOrientationListener mOnOrientationListener)
+    public void setOnOrientationListener(OnOrientationListener mOnOrientationListener)
     {
         this.mOnOrientationListener = mOnOrientationListener;
     }

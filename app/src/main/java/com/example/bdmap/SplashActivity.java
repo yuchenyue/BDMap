@@ -36,7 +36,7 @@ public class SplashActivity extends BaseActivity {
             public void onClick(View v) {
                 chackpremissions();
                 startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                finish();
+//                finish();
                 AppManager.getAppManager().finishActivity();
             }
         });

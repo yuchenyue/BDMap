@@ -18,7 +18,7 @@ public class Presenter implements MainContract.MainPresenter {
     }
 
     public void tos(String ms){
-        Toast.makeText(context,"系统提示"+ms,Toast.LENGTH_SHORT).show();
+        Toast.makeText(context,"系统提示："+ms,Toast.LENGTH_SHORT).show();
     }
 
 }
