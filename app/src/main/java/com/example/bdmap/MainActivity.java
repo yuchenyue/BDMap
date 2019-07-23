@@ -1,20 +1,16 @@
 package com.example.bdmap;
 
-import android.app.SearchManager;
-import android.app.SearchableInfo;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,22 +18,18 @@ import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import com.baidu.location.Poi;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.CircleOptions;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapBaseIndoorMapInfo;
 import com.baidu.mapapi.map.MapPoi;
@@ -48,16 +40,7 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.search.core.SearchResult;
-import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
-import com.baidu.mapapi.search.poi.PoiCitySearchOption;
-import com.baidu.mapapi.search.poi.PoiDetailResult;
-import com.baidu.mapapi.search.poi.PoiDetailSearchResult;
-import com.baidu.mapapi.search.poi.PoiIndoorResult;
-import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
-import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
 import com.baidu.mapapi.search.sug.SuggestionResult;
@@ -67,7 +50,6 @@ import com.example.bdmap.adapter.AutoEditTextAdapter;
 import com.example.bdmap.base.AppManager;
 import com.example.bdmap.contract.MainContract;
 import com.example.bdmap.presenter.Presenter;
-import com.example.bdmap.utils.PoiOverlay;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
@@ -90,30 +72,28 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private FloatingActionsMenu fab_menu_button_down;
     private RadioGroup radioGroup;
     private AutoCompleteTextView search_text;
-//    private TextView mJieguo;
+    //    private TextView mJieguo;
     private ImageView go;
-    private LinearLayout ll_go;
-    private TextView place1,place2;
-
-    BitmapDescriptor icon,icon1;
+    private ConstraintLayout ll_go;
+    private TextView place1, place2;
+    private BitmapDescriptor icon, icon1;
     private DrawerLayout drawerLayout;
     private Presenter presenter;
-    MapStatusUpdate update;
-    PoiSearch mPoiSearch;
-    SuggestionSearch suggestionSearch;
+    private MapStatusUpdate update;
+    private PoiSearch mPoiSearch;
+    private SuggestionSearch suggestionSearch;
     private static boolean isExit = false;
     private float mCurrentX;
     private MyOrientationListener myOrientationListener;
     public LocationClient mLocationClient;
     public BDAbstractLocationListener myListener = new MyLocationListener();
-
-    private double latitude,longitude;//经纬度
+    private double latitude, longitude;//经纬度
     private String city;//当前城市
     private boolean isFirstLoc = true;//是否是第一次定位
-    private LatLng latLng,slatLng;//定位数据
-
+    private LatLng latLng, slatLng;//定位数据
     private List<String> stringlist = new ArrayList<>();
     private List<String> stringlist2 = new ArrayList<>();
+
     /**
      * 个性化地图皮肤
      *
@@ -159,9 +139,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         SDKInitializer.initialize(getApplicationContext());
         SDKInitializer.setHttpsEnable(true);
         setMapCustomFile(this, "custom_map_config.json");
-
         setContentView(R.layout.activity_main);
-
         initView();
         drawer();
         initMap();
@@ -177,19 +155,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         mToolbar = findViewById(R.id.toolbar);
         mMapView = findViewById(R.id.mapView);
         fab_menu_button_down = findViewById(R.id.fab_menu_button_down);
-
         switch1 = findViewById(R.id.switch1);
         rl = findViewById(R.id.rl);
         jt = findViewById(R.id.jt);
-
         radioGroup = findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(this);
-
         fw = findViewById(R.id.fw);
         gs = findViewById(R.id.gs);
         dh = findViewById(R.id.dh);
         mr = findViewById(R.id.mr);
-
         fw.setOnClickListener(this);
         gs.setOnClickListener(this);
         dh.setOnClickListener(this);
@@ -198,7 +172,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         rl.setOnCheckedChangeListener(this);
         switch1.setOnCheckedChangeListener(this);
         presenter = new Presenter(getApplicationContext(), this);
-
         search_text = findViewById(R.id.search_text);
 //        mJieguo = findViewById(R.id.jieguo);
         ll_go = findViewById(R.id.ll_go);
@@ -210,7 +183,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     /**
      * 搜索
      */
-    private void sugSearch(){
+    private void sugSearch() {
         suggestionSearch = SuggestionSearch.newInstance();
         suggestionSearch.setOnGetSuggestionResultListener(sugListener);
         search_text.setOnClickListener(new View.OnClickListener() {
@@ -222,7 +195,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         search_text.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
@@ -232,10 +204,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
             @Override
             public void afterTextChanged(Editable s) {
-
             }
         });
     }
+
+    /**
+     * 联想搜索监听
+     */
     OnGetSuggestionResultListener sugListener = new OnGetSuggestionResultListener() {
         @Override
         public void onGetSuggestionResult(SuggestionResult suggestionResult) {
@@ -247,11 +222,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 stringlist2.clear();
                 for (int i = 0; i < resl.size(); i++) {
                     stringlist.add(resl.get(i).key);
-                    stringlist2.add(resl.get(i).city+resl.get(i).district+resl.get(i).key);
+                    stringlist2.add(resl.get(i).city + resl.get(i).district + resl.get(i).key);
                     slatLng = resl.get(i).pt;
                 }
 //                mJieguo.setText("" + resl);
-                AutoEditTextAdapter adapter = new AutoEditTextAdapter(stringlist,stringlist2, MainActivity.this);
+                AutoEditTextAdapter adapter = new AutoEditTextAdapter(stringlist, stringlist2, MainActivity.this);
                 search_text.setAdapter(adapter);
                 adapter.setOnItemClickListener(new AutoEditTextAdapter.OnItemClickListener() {
                     @Override
@@ -268,25 +243,27 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                             update = MapStatusUpdateFactory.newLatLng(sulating);
                             mBaiduMap.animateMapStatus(update);
                             update = MapStatusUpdateFactory.zoomTo(18f);
-                            mBaiduMap.setMapStatus(update);
+                            mBaiduMap.animateMapStatus(update);
 
                             ll_go.setVisibility(View.VISIBLE);
                             place1.setText(resl.get(position).key);
-                            place2.setText(resl.get(position).city+resl.get(position).district+resl.get(position).key);
-                        }else {
+                            place2.setText(resl.get(position).city + resl.get(position).district + resl.get(position).key);
+                        } else {
                             presenter.tos("请选择附近其他位置");
                         }
                     }
+
                     @Override
                     public void onLongClick(int position) {
-
                     }
                 });
             }
         }
     };
 
-
+    /**
+     * 侧边栏
+     */
     private void drawer() {
         setSupportActionBar(mToolbar);
 
@@ -339,14 +316,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         initLocation();
         mLocationClient.start();//开启定位
 
-        mMapView.getChildAt(2).setPadding(0,0,0,200);//这是控制缩放控件的位置
+        mMapView.getChildAt(2).setPadding(0, 0, 0, 200);//这是控制缩放控件的位置
     }
 
     /**
      * 配置定位参数
      */
     private void initLocation() {
-        if (mLocationClient == null){
+        if (mLocationClient == null) {
             mLocationClient = new LocationClient(getApplicationContext());     //声明LocationClient类
         }
         mLocationClient.registerLocationListener(myListener);    //注册监听函数
@@ -370,14 +347,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         mLocationClient.setLocOption(option);
     }
 
-
+    /**
+     * 定位监听
+     */
     private class MyLocationListener extends BDAbstractLocationListener {
         @Override
         public void onReceiveLocation(BDLocation bdLocation) {
             latitude = bdLocation.getLatitude();
             longitude = bdLocation.getLongitude();
             city = bdLocation.getCity();
-            latLng = new LatLng(latitude,longitude);
+            latLng = new LatLng(latitude, longitude);
 
             MyLocationData locationData = new MyLocationData.Builder()
                     .accuracy(400)
@@ -386,7 +365,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                     .longitude(longitude)
                     .build();
             mBaiduMap.setMyLocationData(locationData);
-            if (isFirstLoc){
+            if (isFirstLoc) {
                 isFirstLoc = false;
                 fistLoc();
                 if (bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
@@ -409,7 +388,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     /**
      * 方向传感器
      */
-    private void initMyOrien(){
+    private void initMyOrien() {
         myOrientationListener = new MyOrientationListener(MainActivity.this);
         myOrientationListener.setOnOrientationListener(new MyOrientationListener.OnOrientationListener() {
             @Override
@@ -422,12 +401,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     /**
      * 设置缩放级别和当前位置
      */
-    private void fistLoc(){
+    private void fistLoc() {
         update = MapStatusUpdateFactory.zoomTo(17f);
         mBaiduMap.setMapStatus(update);
         update = MapStatusUpdateFactory.newLatLng(latLng);
         mBaiduMap.animateMapStatus(update);
     }
+
     /**
      * 地图点击事件
      */
@@ -445,6 +425,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 //                        .center(point).stroke(new Stroke(2, 0xAA00FF00));
 //                mBaiduMap.addOverlay(ooCircle);
             }
+
             public boolean onMapPoiClick(MapPoi poi) {
                 ll_go.setVisibility(View.GONE);
                 mBaiduMap.clear();
@@ -455,7 +436,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 OverlayOptions ooA = new MarkerOptions().position(poi.getPosition()).icon(icon1)
                         .zIndex(6).draggable(true).alpha(0.7f).flat(true);
                 mBaiduMap.addOverlay(ooA);
-                InfoWindow mInfowindow = new InfoWindow(button,poi.getPosition(),-100);
+                InfoWindow mInfowindow = new InfoWindow(button, poi.getPosition(), -100);
                 mBaiduMap.showInfoWindow(mInfowindow);
                 return true;
             }
@@ -478,6 +459,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 定位、跟随、方向指示、默认导航模式
+     *
      * @param v
      */
     @Override
@@ -489,7 +471,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 fistLoc();
                 break;
             case R.id.gs:
-                MyLocationConfiguration configuration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true,null);
+                MyLocationConfiguration configuration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, null);
                 mBaiduMap.setMyLocationConfiguration(configuration);
                 fab_menu_button_down.collapse();
                 break;
@@ -508,6 +490,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 热力、交通、室内图切换
+     *
      * @param buttonView
      * @param isChecked
      */
@@ -542,6 +525,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 卫星、普通图切换
+     *
      * @param group
      * @param checkedId
      */
@@ -562,7 +546,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     }
 
     /**
-     * 搜索
+     * toolbar右侧
      *
      * @param menu
      * @return
@@ -576,6 +560,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 地图切换
+     *
      * @param item
      * @return
      */
@@ -669,7 +654,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
             presenter.tos("再按一次退出程序");
             mHandler.sendEmptyMessageDelayed(0, 2000);
         } else {
-//            stopService(new Intent(this,MainActivity.class));
             AppManager.getAppManager().AppExit(this);
         }
     }
