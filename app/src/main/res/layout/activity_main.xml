@@ -24,43 +24,80 @@
 
         </com.baidu.mapapi.map.MapView>
 
-        <FrameLayout
+        <LinearLayout
+            android:id="@+id/ll_go"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_height="80dp"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:background="@color/white"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/place1"
+                    android:layout_width="match_parent"
+                    android:gravity="center"
+                    android:layout_height="40dp" />
+                <TextView
+                    android:id="@+id/place2"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp" />
+            </LinearLayout>
+            <ImageView
+                android:id="@+id/go"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/icon_go" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/tool"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@drawable/white_btn">
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="20dp">
+
             <include
                 android:id="@+id/include"
                 layout="@layout/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content" />
         </FrameLayout>
 
         <!--<TextView-->
-            <!--android:id="@+id/jieguo"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentStart="true"-->
-            <!--android:layout_alignParentTop="true"-->
-            <!--android:layout_marginStart="0dp"-->
-            <!--android:layout_marginTop="70dp"-->
-            <!--android:background="#d6caca"-->
-            <!--android:padding="15dp"-->
-            <!--android:text="输入位置附近的位置" />-->
+        <!--android:id="@+id/jieguo"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_marginStart="0dp"-->
+        <!--android:layout_marginTop="70dp"-->
+        <!--android:background="#d6caca"-->
+        <!--android:padding="15dp"-->
+        <!--android:text="输入位置附近的位置" />-->
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/fab_menu_button_down"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/mapView"
+            android:layout_below="@+id/tool"
             android:layout_alignParentEnd="true"
-            android:layout_marginBottom="100dp"
+            android:layout_marginTop="50dp"
             app:fab_addButtonColorNormal="@color/white"
             app:fab_addButtonPlusIconColor="@color/black"
             app:fab_addButtonSize="mini"
-            app:fab_expandDirection="up"
+            app:fab_expandDirection="down"
             app:fab_labelStyle="@style/fab_labels_style">
 
             <com.getbase.floatingactionbutton.FloatingActionButton
@@ -101,24 +138,23 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="50dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginBottom="100dp"
             android:text="复位"
             app:fab_colorNormal="@color/white"
             app:fab_icon="@drawable/fw"
             app:fab_size="mini"></com.getbase.floatingactionbutton.FloatingActionButton>
 
+
     </RelativeLayout>
-
-
 
     <!--侧滑部分-->
     <RelativeLayout
         android:layout_width="200dp"
         android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:background="#bfbfbf"
+        android:layout_gravity="start"
+        android:background="#bfbfbf"
         android:paddingTop="50dp">
-
 
         <LinearLayout
             android:id="@+id/tu"
@@ -165,17 +201,20 @@
                 android:text="卫星图" />
 
         </RadioGroup>
+
         <LinearLayout
             android:id="@+id/shikuang"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tu"
             android:layout_marginTop="30dp">
+
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginLeft="20dp"
-                android:src="@drawable/jt"/>
+                android:src="@drawable/jt" />
+
             <TextView
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
@@ -189,10 +228,11 @@
                 android:id="@+id/jt"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:track="@drawable/track"
+                android:checked="true"
                 android:thumb="@drawable/thumb"
-                android:checked="true"/>
+                android:track="@drawable/track" />
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/shinei"
             android:layout_width="200dp"
@@ -204,7 +244,7 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginLeft="20dp"
-                android:src="@drawable/sn"/>
+                android:src="@drawable/sn" />
 
             <TextView
                 android:layout_width="50dp"
@@ -219,9 +259,9 @@
                 android:id="@+id/switch1"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:track="@drawable/track"
+                android:checked="true"
                 android:thumb="@drawable/thumb"
-                android:checked="true"/>
+                android:track="@drawable/track" />
         </LinearLayout>
 
         <LinearLayout
@@ -229,11 +269,13 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/shinei"
             android:layout_marginTop="10dp">
+
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginLeft="20dp"
-                android:src="@drawable/rl"/>
+                android:src="@drawable/rl" />
+
             <TextView
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
@@ -247,10 +289,9 @@
                 android:id="@+id/rl"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:track="@drawable/track"
-                android:thumb="@drawable/thumb"/>
+                android:thumb="@drawable/thumb"
+                android:track="@drawable/track" />
         </LinearLayout>
-
 
     </RelativeLayout>
 

@@ -21,6 +21,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -89,6 +91,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
     private RadioGroup radioGroup;
     private AutoCompleteTextView search_text;
 //    private TextView mJieguo;
+    private ImageView go;
+    private LinearLayout ll_go;
+    private TextView place1,place2;
 
     BitmapDescriptor icon,icon1;
     private DrawerLayout drawerLayout;
@@ -161,7 +166,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         drawer();
         initMap();
         mapClick();
-
+        sugSearch();
     }
 
     /**
@@ -196,11 +201,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
 
         search_text = findViewById(R.id.search_text);
 //        mJieguo = findViewById(R.id.jieguo);
-        sugSearch();
+        ll_go = findViewById(R.id.ll_go);
+        go = findViewById(R.id.go);
+        place1 = findViewById(R.id.place1);
+        place2 = findViewById(R.id.place2);
     }
 
+    /**
+     * 搜索
+     */
     private void sugSearch(){
-
         suggestionSearch = SuggestionSearch.newInstance();
         suggestionSearch.setOnGetSuggestionResultListener(sugListener);
         search_text.setOnClickListener(new View.OnClickListener() {
@@ -248,16 +258,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                     public void onClick(int position) {
                         LatLng sulating = resl.get(position).pt;
                         if (sulating != null) {
-
-                            Toast.makeText(MainActivity.this, "" + resl.get(position).key, Toast.LENGTH_SHORT).show();
                             search_text.setText(stringlist.get(position));
                             search_text.dismissDropDown();
+                            search_text.setSelection(search_text.getText().length());
 
                             mBaiduMap.clear();
                             OverlayOptions overlayOptions = new MarkerOptions().position(sulating).icon(icon);
                             mBaiduMap.addOverlay(overlayOptions);
                             update = MapStatusUpdateFactory.newLatLng(sulating);
                             mBaiduMap.animateMapStatus(update);
+                            update = MapStatusUpdateFactory.zoomTo(18f);
+                            mBaiduMap.setMapStatus(update);
+
+                            ll_go.setVisibility(View.VISIBLE);
+                            place1.setText(resl.get(position).key);
+                            place2.setText(resl.get(position).city+resl.get(position).district+resl.get(position).key);
                         }else {
                             presenter.tos("请选择附近其他位置");
                         }
@@ -323,6 +338,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
         mBaiduMap.setMyLocationEnabled(true);
         initLocation();
         mLocationClient.start();//开启定位
+
+        mMapView.getChildAt(2).setPadding(0,0,0,200);//这是控制缩放控件的位置
     }
 
     /**
@@ -369,7 +386,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                     .longitude(longitude)
                     .build();
             mBaiduMap.setMyLocationData(locationData);
-            Log.d(TAG,"fx"+locationData.direction);
             if (isFirstLoc){
                 isFirstLoc = false;
                 fistLoc();
@@ -416,19 +432,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
      * 地图点击事件
      */
     private void mapClick() {
+
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
             public void onMapClick(LatLng point) {
-                mBaiduMap.clear();
-
-                OverlayOptions ooA = new MarkerOptions().position(point).icon(icon)
-                        .zIndex(6).draggable(true).alpha(0.7f).flat(true);
-                mBaiduMap.addOverlay(ooA);
-                // 添加圆
-                OverlayOptions ooCircle = new CircleOptions().fillColor(0XFF7DC5EB)
-                        .center(point).stroke(new Stroke(2, 0xAA00FF00));
-                mBaiduMap.addOverlay(ooCircle);
+                ll_go.setVisibility(View.GONE);
+//                mBaiduMap.clear();
+//                OverlayOptions ooA = new MarkerOptions().position(point).icon(icon)
+//                        .zIndex(6).draggable(true).alpha(0.7f).flat(true);
+//                mBaiduMap.addOverlay(ooA);
+//                // 添加圆
+//                OverlayOptions ooCircle = new CircleOptions().fillColor(0XFF7DC5EB)
+//                        .center(point).stroke(new Stroke(2, 0xAA00FF00));
+//                mBaiduMap.addOverlay(ooCircle);
             }
             public boolean onMapPoiClick(MapPoi poi) {
+                ll_go.setVisibility(View.GONE);
                 mBaiduMap.clear();
                 icon1 = BitmapDescriptorFactory.fromResource(R.drawable.mappoi);
                 TextView button = new TextView(getApplicationContext());
@@ -456,7 +474,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
                 }
             }
         });
-
     }
 
     /**
@@ -465,6 +482,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener
      */
     @Override
     public void onClick(View v) {
+        ll_go.setVisibility(View.GONE);
         switch (v.getId()) {
             case R.id.fw:
                 mBaiduMap.clear();
